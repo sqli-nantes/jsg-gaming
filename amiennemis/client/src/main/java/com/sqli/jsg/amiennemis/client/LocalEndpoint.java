@@ -1,4 +1,4 @@
-package org.bejug.tictactoe.client;
+package com.sqli.jsg.amiennemis.client;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -7,13 +7,9 @@ import javafx.application.Platform;
 
 import javax.websocket.*;
 
-/**
- *
- * @author johan
- */
 public class LocalEndpoint extends Endpoint implements MessageHandler.Whole<String> {
 
-	public static TicTacToeClient tictactoe;
+	public static AmiEnnemisClient client;
 	private Session session;
 	
 	@Override
@@ -21,7 +17,7 @@ public class LocalEndpoint extends Endpoint implements MessageHandler.Whole<Stri
 		System.out.println("Endpoint opened, session = "+session+", config = "+config);
 		this.session = session;
 		session.addMessageHandler(this);
-		tictactoe.setEndpoint(this);
+		client.setEndpoint(this);
 	}
 
     @Override
@@ -31,22 +27,22 @@ public class LocalEndpoint extends Endpoint implements MessageHandler.Whole<Stri
 
 				System.out.println("GOT MESSAGE: " + message);
 				if ("p1".equals(message)) {
-					tictactoe.setInfo("Waiting for a second player to join...");
+					client.setInfo("Waiting for a second player to join...");
 				}
 				if (message.startsWith("p2")) {
-					tictactoe.setInfo("You play 'O'");
-					tictactoe.setSymbol(1);
-                    tictactoe.setOtherSymbol(2);
-					tictactoe.myTurn(true);
+					client.setInfo("You play 'O'");
+					client.setSymbol(1);
+                    client.setOtherSymbol(2);
+					client.myTurn(true);
 				}
 				if ("p3".equals(message)) {
-					tictactoe.setInfo("You play 'X'");
-					tictactoe.setSymbol(2);
-                    tictactoe.setOtherSymbol(1);
+					client.setInfo("You play 'X'");
+					client.setSymbol(2);
+                    client.setOtherSymbol(1);
 				}
 				if (message.startsWith("om")){
 					int c = Integer.parseInt(message.substring(3));
-					tictactoe.doMove(c);
+					client.doMove(c);
 				}
 
 

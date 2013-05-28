@@ -1,4 +1,4 @@
-package org.bejug.tictactoe.client;
+package com.sqli.jsg.amiennemis.client;
 
 import java.io.IOException;
 import java.net.URI;
@@ -29,7 +29,7 @@ import javax.websocket.WebSocketContainer;
  * Hello world!
  *
  */
-public class TicTacToeClient extends Application {
+public class AmiEnnemisClient extends Application {
 
     private String SERVER = "ws://ec2-54-242-90-129.compute-1.amazonaws.com:80/tictactoeserver/endpoint";
 //    private String SERVER = "ws://localhost:8080/tictactoeserver/endpoint";
@@ -52,7 +52,7 @@ public class TicTacToeClient extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         prepareBoard();
-        LocalEndpoint.tictactoe = this;
+        LocalEndpoint.client = this;
         Label infoLabel = new Label();
         infoLabel.textProperty().bind(info);
         Label turnInfoLabel = new Label();
@@ -191,7 +191,7 @@ public class TicTacToeClient extends Application {
         try {
             endpoint.done();
         } catch (IOException ex) {
-            Logger.getLogger(TicTacToeClient.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AmiEnnemisClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }
