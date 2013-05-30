@@ -30,14 +30,19 @@ public enum GameImpl implements Game {
 
 	@Override
 	public void updatePersonnage(int id, int x, int y) {
+		boolean persoExists = false;
 		for (Personnage perso : others) {
 			if(perso.id == id) {
 				perso.setPosition(new Point(x, y));
 				this.field.updateField(perso);
-				break;
+				persoExists = true;
 			}
 		}
-		
+		if(!persoExists) {
+			Poursuivant nouveau = new Poursuivant(id, new Point(x, y));
+			this.field.updateField(nouveau);
+			others.add(nouveau);
+		}
 	}
 	
 	
