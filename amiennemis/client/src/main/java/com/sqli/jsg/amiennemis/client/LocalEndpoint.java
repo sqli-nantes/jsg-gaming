@@ -20,8 +20,7 @@ import com.sqli.jsg.amiennemis.client.model.Personnage;
 
 public class LocalEndpoint extends Endpoint implements MessageHandler.Whole<String> {
 
-    private String SERVER = "ws://ec2-54-242-90-129.compute-1.amazonaws.com:80/tictactoeserver/endpoint";
-//  private String SERVER = "ws://localhost:8080/tictactoeserver/endpoint";
+    private String SERVER = "ws://10.33.44.152:8080/amiennemis-server-1.0-SNAPSHOT/endpoint";
 	
 	public static AmiEnnemisClient client;
 	private Session session;
