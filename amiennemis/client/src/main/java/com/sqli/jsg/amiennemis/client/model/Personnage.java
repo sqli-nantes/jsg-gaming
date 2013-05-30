@@ -23,6 +23,19 @@ public abstract class Personnage {
 	public void move(Move moveRequest, Field field) {
 		oldPosition = position;
 		Point requestPosition = moveRequest.getNewPosition(position);
+		if(requestPosition.x > field.x-1) {
+			requestPosition.x = field.x;
+		}
+		if(requestPosition.y > field.y-1) {
+			requestPosition.y = field.y;
+		}
+		if(requestPosition.x < 1) {
+			requestPosition.x = 1;
+		}
+		if(requestPosition.y < 1) {
+			requestPosition.y = 1;
+		}
+		
 		if(currentDirection.isAuthorized(moveRequest)) {
 			position = requestPosition;
 			currentDirection = moveRequest;
