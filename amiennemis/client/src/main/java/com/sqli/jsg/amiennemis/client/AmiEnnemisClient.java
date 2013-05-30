@@ -1,197 +1,180 @@
 package com.sqli.jsg.amiennemis.client;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import static com.sqli.jsg.amiennemis.client.model.Move.BAS;
+import static com.sqli.jsg.amiennemis.client.model.Move.DROITE;
+import static com.sqli.jsg.amiennemis.client.model.Move.GAUCHE;
+import static com.sqli.jsg.amiennemis.client.model.Move.HAUT;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import javax.websocket.ContainerProvider;
-import javax.websocket.DeploymentException;
-import javax.websocket.WebSocketContainer;
+import javafx.util.Duration;
+
+import com.sqli.jsg.amiennemis.client.model.Game;
+import com.sqli.jsg.amiennemis.client.model.GameImpl;
+import com.sqli.jsg.amiennemis.client.model.Sprite;
 
 /**
  * Hello world!
- *
+ * 
  */
 public class AmiEnnemisClient extends Application {
 
-    private String SERVER = "ws://ec2-54-242-90-129.compute-1.amazonaws.com:80/tictactoeserver/endpoint";
-//    private String SERVER = "ws://localhost:8080/tictactoeserver/endpoint";
-    final StackPane[] tile = new StackPane[9];
-    final StringProperty info = new SimpleStringProperty("starting the game");
-    final StringProperty turnInfo = new SimpleStringProperty("");
-    private boolean myTurn = false;
-    private int[] board = new int[9];
-    private Rectangle[] rect = new Rectangle[9];
-    private int symbol = 0;
-    private int otherSymbol = 0;
-    private final Font font = new Font(60);
-    private final Color COLOR_WIN = Color.GREEN;
+	final private int NB_CASES_H = 25;
+	final private int NB_CASES_V = 25;
+	final private int CELLSPACE = 0;
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-    private LocalEndpoint endpoint;
+	final ImageView[] tile = new ImageView[NB_CASES_H * NB_CASES_V];
+	final StringProperty info = new SimpleStringProperty("starting the game");
+	final StringProperty turnInfo = new SimpleStringProperty("");
+	private Game game;
 
-    @Override
-    public void start(Stage stage) throws Exception {
-        prepareBoard();
-        LocalEndpoint.client = this;
-        Label infoLabel = new Label();
-        infoLabel.textProperty().bind(info);
-        Label turnInfoLabel = new Label();
-        turnInfoLabel.textProperty().bind(turnInfo);
-        VBox rows = new VBox();
-        rows.setStyle("-fx-background-color: black; -fx-background-radius: 1000");
-        rows.setSpacing(10);
-        for (int i = 0; i < 3; i++) {
-            HBox cols = new HBox();
-            cols.setSpacing(10);
-            cols.getChildren().addAll(tile[3 * i], tile[3 * i + 1], tile[3 * i + 2]);
-            rows.getChildren().add(cols);
-        }
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-padding: 20");
-        root.setMargin(infoLabel, new Insets(10, 0, 10, 0));
-        root.setTop(infoLabel);
-        root.setCenter(rows);
-        root.setBottom(turnInfoLabel);
-        Scene scene = new Scene(root);
-        stage.setScene(scene);
-        stage.show();
-        startGame();
-    }
+	public static void main(String[] args) {
+		launch(args);
+	}
 
-    private void prepareBoard() {
-        for (int i = 0; i < 9; i++) {
-            tile[i] = new StackPane();
-            rect[i] = new Rectangle(80, 80);
-            rect[i].setFill(Color.WHITE);
-            tile[i].getChildren().add(rect[i]);
-            final int coords = i;
-            tile[i].setOnMouseClicked(new EventHandler<MouseEvent>() {
-                public void handle(MouseEvent t) {
-                    System.out.println("mouse clicked on " + coords);
-                    if (myTurn) {
-                        if (board[coords] == 0) {
-                            board[coords] = symbol;
-                            String s = (symbol == 1) ? "O" : "X";
-                            Label l = new Label(s);
-                            l.setFont(font);
-                            tile[coords].getChildren().add(l);
-                            myTurn(false);
-                            endpoint.myMove(coords, symbol);
-                            System.out.println("Winner? " + checkWinner());
-                            turnInfo.set("Waiting for your opponent to make a move...");
-                        }
-                    }
-                }
-            });
-        }
-    }
+	@Override
+	public void start(Stage stage) throws Exception {
+		game = GameImpl.INSTANCE;
 
-    private void startGame() throws URISyntaxException, DeploymentException, IOException {
-        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-        container.connectToServer(LocalEndpoint.class, null, new URI(SERVER));
-    }
+		LocalEndpoint.client = this;
 
-    public void setInfo(String txt) {
-        System.out.println("change infotext from " + info.get() + " to " + txt);
-        info.set(txt);
-    }
+		final BorderPane root = new BorderPane();
+		root.setStyle("-fx-padding: 20");
+//		root.setCenter(rows);
 
-    public void doMove(int coords) {
-        String s = (otherSymbol == 1) ? "O" : "X";
+		Timeline fiveSecondsWonder = new Timeline(new KeyFrame(
+				Duration.seconds(1), new EventHandler<ActionEvent>() {
+					
+					@Override
+					public void handle(ActionEvent event) {
+						
+						 final Sprite[][] grille = game.getGrille();
+						// *
+//						final Sprite[][] grille = new Sprite[][] {
+//								{ Sprite.MUR, Sprite.SOL, Sprite.FANTOME },
+//								{ Sprite.MUR, Sprite.SOL, Sprite.FANTOME },
+//								{ Sprite.MUR, Sprite.SOL, Sprite.FANTOME } };
+						// */
+						if (grille.length == 0) {
+							System.out.println("Grille vide");
+						} else {
+							System.out.println("Grille de taille : ("
+									+ grille.length + " x " + grille[0].length
+									+ ")");
+						}
+						VBox rows = prepareBoard(grille);
+						
+						root.setCenter(rows);
+						
+					}
+				}));
+		fiveSecondsWonder.setCycleCount(Timeline.INDEFINITE);
+		fiveSecondsWonder.play();
 
-        Label l = new Label(s);
-        l.setFont(font);
-        tile[coords].getChildren().add(l);
+		
+		Scene scene = new Scene(root);
+		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent event) {
+				System.out
+						.println("AmiEnnemisClient.start(...).new EventHandler() {...}.handle()"
+								+ event.getCode());
+				doMove(event);
+			}
+		});
+		stage.setScene(scene);
+		stage.show();
+	}
 
-        board[coords] = otherSymbol;
-        myTurn(true);
-        System.out.println("winner?" + checkWinner());
-    }
+	private VBox prepareBoard(final Sprite[][] grille) {
+		// *
+		for (int i = 0; i < grille.length; i++) {
 
-    public void setSymbol(int s) {
-        symbol = s;
-    }
+			for (int j = 0; j < grille[i].length; j++) {
+				switch (grille[i][j]) {
+				case FANTOME:
+					tile[NB_CASES_V * i + j] = new ImageView(new Image(
+							"/joueur_bleu.png", 20, 20, true, true));
+					break;
+				case MUR:
+					tile[NB_CASES_V * i + j] = new ImageView(new Image(
+							"/mur_ovale_horizontal.png", 20, 20, true, true));
+					break;
+				case POURSUIVANT:
+					tile[NB_CASES_V * i + j] = new ImageView(new Image(
+							"/pacman.png", 20, 20, true, true));
+					break;
+				case SOL:
+					tile[NB_CASES_V * i + j] = new ImageView(new Image(
+							"/sol.png", 20, 20, true, true));
+					break;
+				}
+			}
+		}// */
 
-    public void setOtherSymbol(int s) {
-        otherSymbol = s;
-    }
+		for (int i = 0; i < tile.length; i++) {
+			// tile[i] = new ImageView(new Image("/p.png", 20, 20, true, true));
+			// tile[i].setOnKeyPressed(arg0)
+		}
 
-    public void myTurn(boolean b) {
-        myTurn = b;
-        if (b) {
-            turnInfo.set("Your turn...");
-        }
+		VBox rows = new VBox();
+		rows.setStyle("-fx-background-color: black;");
+		rows.setSpacing(CELLSPACE);
+		for (int i = 0; i < grille.length; i++) {
+			HBox cols = new HBox();
+			cols.setSpacing(CELLSPACE);
+			List<ImageView> listImageEnLigne = new ArrayList<ImageView>();
+			for (int j = 0; j < grille[i].length; j++) {
+				System.out.println("i = " + i + " ; j =" + j + " ; coord = "
+						+ (NB_CASES_V * i + j));
 
-    }
+				listImageEnLigne.add(tile[NB_CASES_V * i + j]);
+			}
+			System.out.println("LA");
+			cols.getChildren().addAll(listImageEnLigne);
+			rows.getChildren().add(cols);
+		}
+		return rows;
+	}
 
-    void setEndpoint(LocalEndpoint endpoint) {
-        this.endpoint = endpoint;
-    }
+	public void setInfo(String txt) {
+		System.out.println("change infotext from " + info.get() + " to " + txt);
+		info.set(txt);
+	}
 
-    public int checkWinner() {
+	public void doMove(KeyEvent event) {
+		// appel
+		switch (event.getCode()) {
+		case KP_DOWN:
+			game.move(BAS);
+			break;
+		case KP_LEFT:
+			game.move(GAUCHE);
+			break;
+		case KP_RIGHT:
+			game.move(DROITE);
+			break;
+		case KP_UP:
+			game.move(HAUT);
+			break;
+		default:
+		}
+	}
 
-        for (int i = 0; i < 3; i++) {
-            // check horizontal
-            if ((board[3 * i] != 0) && (board[3 * i] == board[3 * i + 1]) && (board[3 * i] == board[3 * i + 2])) {
-                setWinner(board[3 * i]);
-                rect[3 * i].setFill(COLOR_WIN);
-                rect[3 * i + 1].setFill(COLOR_WIN);
-                rect[3 * i + 2].setFill(COLOR_WIN);
-                return board[3 * i];
-            }
-            // check vertical
-            if ((board[i] != 0) && (board[i] == board[i + 3]) && (board[i] == board[i + 6])) {
-                setWinner(board[i]);
-                rect[i].setFill(COLOR_WIN);
-                rect[3 + i].setFill(COLOR_WIN);
-                rect[6 + i].setFill(COLOR_WIN);
-                return board[i];
-            }
-        }
-        if ((board[0] != 0) && (board[0] == board[4]) && (board[0] == board[8])) {
-            rect[0].setFill(COLOR_WIN);
-            rect[4].setFill(COLOR_WIN);
-            rect[8].setFill(COLOR_WIN);
-
-            setWinner(board[0]);
-            return board[0];
-        }
-        if ((board[2] != 0) && (board[2] == board[4]) && (board[2] == board[6])) {
-            rect[2].setFill(COLOR_WIN);
-            rect[4].setFill(COLOR_WIN);
-            rect[6].setFill(COLOR_WIN);
-            setWinner(board[2]);
-            return board[2];
-        }
-
-        return 0;
-    }
-
-    private void setWinner(int w) {
-        try {
-            endpoint.done();
-        } catch (IOException ex) {
-            Logger.getLogger(AmiEnnemisClient.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
 }

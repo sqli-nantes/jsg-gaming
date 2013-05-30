@@ -47,7 +47,6 @@ public class LocalEndpoint extends Endpoint implements MessageHandler.Whole<Stri
 		System.out.println("Endpoint opened, session = "+session+", config = "+config);
 		this.session = session;
 		session.addMessageHandler(this);
-		client.setEndpoint(this);
 	}
 	
 	public void broadcastPosition(Personnage personnage) {

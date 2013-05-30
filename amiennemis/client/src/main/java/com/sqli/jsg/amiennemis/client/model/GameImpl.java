@@ -18,6 +18,8 @@ public enum GameImpl implements Game {
 	private GameImpl() {
 		this.personnage = new Poursuivant(Integer.parseInt(System.getProperty("id")), new Point(Integer.parseInt(System.getProperty("x")), Integer.parseInt(System.getProperty("y"))));
 		LocalEndpoint.getInstance().setGame(this);
+		this.field = new Field();
+		this.field.generateField();
 	}
 	
 	@Override

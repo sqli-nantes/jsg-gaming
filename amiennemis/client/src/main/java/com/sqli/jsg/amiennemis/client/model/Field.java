@@ -4,9 +4,9 @@ import java.awt.Point;
 
 public class Field {
 
-	protected Sprite[][] field;
 	protected int x = 25;
 	protected int y = 25;
+	protected Sprite[][] field = new Sprite[x][y];
 	
 	public Sprite[][] getField() {
 		return this.field;
@@ -23,7 +23,8 @@ public class Field {
 
 	public void generateField() {
 		for(int i=0; i<x; i++) {
-			for(int j=0; i<y; j++) {
+			this.field[i] = new Sprite[y];
+			for(int j=0; j<y; j++) {
 				this.field[i][j] = Sprite.SOL;
 				if(j == 0 || i == 0 || j == x || i == y) {
 					this.field[i][j] = Sprite.MUR;
