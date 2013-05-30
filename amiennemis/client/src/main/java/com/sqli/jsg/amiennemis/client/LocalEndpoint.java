@@ -55,7 +55,7 @@ public class LocalEndpoint extends Endpoint implements MessageHandler.Whole<Stri
 		String y = String.valueOf((int) personnage.getPosition().getY());
 		
 		try {
-			session.getBasicRemote().sendText(String.format("%s:%s", x, y));
+			session.getBasicRemote().sendText(String.format("%s:%s:%s",personnage.getId(), x, y));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

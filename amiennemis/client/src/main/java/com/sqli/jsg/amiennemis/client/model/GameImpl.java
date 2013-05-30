@@ -4,6 +4,8 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sqli.jsg.amiennemis.client.LocalEndpoint;
+
 public enum GameImpl implements Game {
 
 	INSTANCE;
@@ -15,6 +17,7 @@ public enum GameImpl implements Game {
 	
 	private GameImpl() {
 		this.personnage = new Poursuivant(Integer.parseInt(System.getProperty("id")), new Point(Integer.parseInt(System.getProperty("x")), Integer.parseInt(System.getProperty("y"))));
+		LocalEndpoint.getInstance().setGame(this);
 	}
 	
 	@Override
@@ -26,6 +29,7 @@ public enum GameImpl implements Game {
 	public void move(Move move) {
 		this.personnage.move(move, this.field);
 		this.field.updateField(personnage);
+		LocalEndpoint.getInstance().broadcastPosition(personnage);
 	}
 
 	@Override
