@@ -8,7 +8,7 @@ import java.util.List;
 @ServerEndpoint(value = "/endpoint")
 public class AmiEnnemisEndpoint {
 
-    List<Session> clients = new ArrayList<Session>();
+    private static List<Session> clients = new ArrayList<Session>();
 
     /**
      * Called when a web-socket connection is opened.
@@ -47,7 +47,8 @@ public class AmiEnnemisEndpoint {
     	 System.out.println("            message : " + message);
         for(Session client : clients) {
             if(!client.equals(session)) {
-                session.getBasicRemote().sendText(message);
+            	System.out.println("Resend message to : " + client);
+            	client.getBasicRemote().sendText(message);
             }
         }
     }
