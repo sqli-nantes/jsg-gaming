@@ -6,6 +6,13 @@ public abstract class Personnage {
 	protected Point position;
 	protected Point oldPosition;
 	protected Sprite spriteType;
+	protected int id;
+	
+	public Personnage(int id, Point position) {
+		this.id = id;
+		this.position = position;
+		this.oldPosition = position;
+	}
 
 	public Point getOldPosition() {
 		return oldPosition;
